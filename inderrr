@@ -1,273 +1,29 @@
-<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simulatore di Consenso (demo)</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body { margin: 0; font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; background: #f4f6f8; color: #111; }
-    .wrap { max-width: 820px; margin: 0 auto; padding: 18px; }
-    h1 { margin: 6px 0 12px; font-size: 22px; text-align: center; }
-    .note { font-size: 12px; color: #555; text-align: center; margin-bottom: 14px; }
-    .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 4px 12px rgba(0,0,0,.08); margin: 12px 0; }
-    .row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #eee; }
-    .row:first-child { border-top: 0; }
-    .label { flex: 1; font-size: 14px; }
-    .who { width: 52px; text-align: center; font-weight: 700; font-size: 12px; }
-    input[type="checkbox"] { width: 20px; height: 20px; }
-    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; background: #eef2ff; }
-    button { width: 100%; padding: 14px; border: 0; border-radius: 10px; background: #007aff; color: #fff; font-size: 16px; font-weight: 700; }
-    button:disabled { background: #a9a9a9; }
-    .result { text-align: center; font-weight: 800; margin-top: 10px; }
-    .muted { color:#666; font-size: 12px; margin-top: 6px; text-align:center; }
-    .ok { color: #118a2c; }
-    .warn { color: #b06a00; }
-    .no { color: #b00020; }
-    .mini { font-size: 12px; color:#666; margin-top: 10px; }
-    .grid2 { display:flex; gap:10px; flex-wrap: wrap; }
-    .grid2 > div { flex: 1 1 240px; }
-    .box { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e7e7e7; background: #fafafa; }
-    @media (prefers-color-scheme: dark) {
-      body { background:#0f1115; color:#f2f2f2; }
-      .card { background:#171a21; box-shadow:none; border: 1px solid #2a2f3a; }
-      .note,.muted,.mini { color:#b7bdc8; }
-      .row { border-top: 1px solid #2a2f3a; }
-      .box { background:#10131a; border-color:#2a2f3a; color:#f2f2f2; }
-      .pill { background:#1f2a44; }
-    }
-  </style>
-</head>
+const CACHE_NAME = "consenso-cache-v1";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest"
+  // se aggiungi icon-192.png, metti anche "./icon-192.png"
+];
 
-<body>
-  <div class="wrap">
-    <h1>Consenso consapevole — demo</h1>
-    <div class="note">Simulazione didattica: il consenso reale deve essere sempre libero, attuale e revocabile in ogni momento.</div>
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  );
+});
 
-    <div class="card">
-      <div class="grid2">
-        <div>
-          <div class="mini"><strong>Parte A</strong> (nome facoltativo)</div>
-          <input id="nameA" class="box" placeholder="Es. A" />
-        </div>
-        <div>
-          <div class="mini"><strong>Parte B</strong> (nome facoltativo)</div>
-          <input id="nameB" class="box" placeholder="Es. B" />
-        </div>
-      </div>
-    </div>
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(k => (k === CACHE_NAME ? null : caches.delete(k)))
+      )
+    )
+  );
+});
 
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <div><strong>Pratiche (6)</strong></div>
-        <span class="pill" id="counter">0/6 consensuali</span>
-      </div>
-
-      <!-- Header -->
-      <div class="row" style="font-weight:800; font-size:12px; opacity:.85;">
-        <div class="label">Pratica</div>
-        <div class="who">A</div>
-        <div class="who">B</div>
-      </div>
-
-      <!-- 6 pratiche -->
-      <div class="row practice">
-        <div class="label">Baci e contatto affettivo</div>
-        <div class="who"><input type="checkbox" data-side="A" data-id="1"></div>
-        <div class="who"><input type="checkbox" data-side="B" data-id="1"></div>
-      </div>
-
-      <div class="row practice">
-        <div class="label">Carezze intime</div>
-        <div class="who"><input type="checkbox" data-side="A" data-id="2"></div>
-        <div class="who"><input type="checkbox" data-side="B" data-id="2"></div>
-      </div>
-
-      <div class="row practice">
-        <div class="label">Sesso orale</div>
-        <div class="who"><input type="checkbox" data-side="A" data-id="3"></div>
-        <div class="who"><input type="checkbox" data-side="B" data-id="3"></div>
-      </div>
-
-      <div class="row practice">
-        <div class="label">Rapporto vaginale</div>
-        <div class="who"><input type="checkbox" data-side="A" data-id="4"></div>
-        <div class="who"><input type="checkbox" data-side="B" data-id="4"></div>
-      </div>
-
-      <div class="row practice">
-        <div class="label">Rapporto anale</div>
-        <div class="who"><input type="checkbox" data-side="A" data-id="5"></div>
-        <div class="who"><input type="checkbox" data-side="B" data-id="5"></div>
-      </div>
-
-      <div class="row practice">
-        <div class="label">Uso di oggetti erotici</div>
-        <div class="who"><input type="checkbox" data-side="A" data-id="6"></div>
-        <div class="who"><input type="checkbox" data-side="B" data-id="6"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <label style="display:flex; gap:10px; align-items:flex-start;">
-        <input type="checkbox" id="totalConsent" />
-        <span>
-          <strong>Conferma finale</strong><br/>
-          Confermo che ciò che seleziono è volontario, attuale e revocabile in qualsiasi momento.
-        </span>
-      </label>
-      <div class="muted">Il pulsante si attiva solo con questa conferma.</div>
-    </div>
-
-    <button id="btn" disabled>Verifica e genera riepilogo</button>
-
-    <div class="card" id="outCard" style="display:none;">
-      <div class="result" id="resultText"></div>
-      <div class="mini" id="summary"></div>
-      <div class="mini" id="time"></div>
-      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button id="copyBtn" style="flex:1 1 220px; background:#1f7a1f;">Copia riepilogo</button>
-        <button id="resetBtn" style="flex:1 1 220px; background:#444;">Reset</button>
-      </div>
-      <div class="mini">Nota: non salva nulla online. È solo una demo locale/pagina statica.</div>
-    </div>
-  </div>
-
-<script>
-(function () {
-  const total = 6;
-
-  const btn = document.getElementById("btn");
-  const totalConsent = document.getElementById("totalConsent");
-  const counter = document.getElementById("counter");
-
-  const outCard = document.getElementById("outCard");
-  const resultText = document.getElementById("resultText");
-  const summary = document.getElementById("summary");
-  const timeEl = document.getElementById("time");
-
-  const nameA = document.getElementById("nameA");
-  const nameB = document.getElementById("nameB");
-
-  const copyBtn = document.getElementById("copyBtn");
-  const resetBtn = document.getElementById("resetBtn");
-
-  const checks = Array.from(document.querySelectorAll('input[type="checkbox"][data-id]'));
-
-  function getLabelById(id) {
-    const row = document.querySelector('.practice input[data-id="' + id + '"]').closest(".practice");
-    return row.querySelector(".label").textContent.trim();
-  }
-
-  function countMutual() {
-    let mutual = 0;
-    for (let i = 1; i <= total; i++) {
-      const a = document.querySelector('input[data-side="A"][data-id="' + i + '"]').checked;
-      const b = document.querySelector('input[data-side="B"][data-id="' + i + '"]').checked;
-      if (a && b) mutual++;
-    }
-    counter.textContent = mutual + "/" + total + " consensuali";
-    return mutual;
-  }
-
-  function enableBtn() {
-    btn.disabled = !totalConsent.checked;
-  }
-
-  checks.forEach(c => c.addEventListener("change", () => {
-    countMutual();
-    outCard.style.display = "none";
-  }));
-
-  totalConsent.addEventListener("change", () => {
-    enableBtn();
-    outCard.style.display = "none";
-  });
-
-  btn.addEventListener("click", () => {
-    const mutual = countMutual();
-    const now = new Date();
-    const when = now.toLocaleString();
-
-    const aName = (nameA.value || "Parte A").trim();
-    const bName = (nameB.value || "Parte B").trim();
-
-    // Elenco pratiche consensuali (bilaterali)
-    const okList = [];
-    for (let i = 1; i <= total; i++) {
-      const a = document.querySelector('input[data-side="A"][data-id="' + i + '"]').checked;
-      const b = document.querySelector('input[data-side="B"][data-id="' + i + '"]').checked;
-      if (a && b) okList.push("• " + getLabelById(i));
-    }
-
-    // Stato
-    outCard.style.display = "block";
-    let status = "";
-    let cls = "";
-
-    if (!totalConsent.checked) {
-      status = "❌ Non valido: manca la conferma finale";
-      cls = "no";
-    } else if (mutual === 0) {
-      status = "❌ Nessuna pratica selezionata da entrambe le parti";
-      cls = "no";
-    } else if (mutual < total) {
-      status = "⚠️ Consenso parziale (solo alcune pratiche sono bilaterali)";
-      cls = "warn";
-    } else {
-      status = "✅ Consenso completo (tutte le pratiche selezionate da entrambe)";
-      cls = "ok";
-    }
-
-    resultText.className = "result " + cls;
-    resultText.textContent = status;
-
-    const okText = okList.length ? okList.join("\n") : "• (nessuna)";
-    const text =
-      "Riepilogo (demo)\n" +
-      "Parte A: " + aName + "\n" +
-      "Parte B: " + bName + "\n" +
-      "Conferma finale: " + (totalConsent.checked ? "SÌ" : "NO") + "\n" +
-      "Pratiche consensuali (bilaterali):\n" + okText + "\n" +
-      "Timestamp: " + when + "\n" +
-      "Nota: revocabile in qualsiasi momento.";
-
-    summary.textContent = text;
-    timeEl.textContent = "Generato: " + when;
-  });
-
-  copyBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(summary.textContent);
-      copyBtn.textContent = "Copiato ✅";
-      setTimeout(() => (copyBtn.textContent = "Copia riepilogo"), 1200);
-    } catch (e) {
-      // fallback per Safari vecchi
-      const ta = document.createElement("textarea");
-      ta.value = summary.textContent;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      copyBtn.textContent = "Copiato ✅";
-      setTimeout(() => (copyBtn.textContent = "Copia riepilogo"), 1200);
-    }
-  });
-
-  resetBtn.addEventListener("click", () => {
-    checks.forEach(c => (c.checked = false));
-    totalConsent.checked = false;
-    nameA.value = "";
-    nameB.value = "";
-    enableBtn();
-    countMutual();
-    outCard.style.display = "none";
-  });
-
-  // init
-  enableBtn();
-  countMutual();
-})();
-</script>
-</body>
-</html>
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(res => res || fetch(event.request))
+  );
+});
