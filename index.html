@@ -3,7 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simulatore di Consenso (demo)</title>
+  <title>Consenso consapevole</title>
+
+  <!-- PWA: manifest + colori -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#007aff">
+
+  <!-- iOS specific -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Consenso">
+  <!-- icona iOS (la creeremo dopo, intanto non rompe niente) -->
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <style>
     :root { color-scheme: light dark; }
     body { margin: 0; font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; background: #f4f6f8; color: #111; }
@@ -17,8 +29,8 @@
     .who { width: 52px; text-align: center; font-weight: 700; font-size: 12px; }
     input[type="checkbox"] { width: 20px; height: 20px; }
     .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; background: #eef2ff; }
-    button { width: 100%; padding: 14px; border: 0; border-radius: 10px; background: #007aff; color: #fff; font-size: 16px; font-weight: 700; }
-    button:disabled { background: #a9a9a9; }
+    button { width: 100%; padding: 14px; border: 0; border-radius: 10px; background: #007aff; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+    button:disabled { background: #a9a9a9; cursor: default; }
     .result { text-align: center; font-weight: 800; margin-top: 10px; }
     .muted { color:#666; font-size: 12px; margin-top: 6px; text-align:center; }
     .ok { color: #118a2c; }
@@ -63,14 +75,12 @@
         <span class="pill" id="counter">0/6 consensuali</span>
       </div>
 
-      <!-- Header -->
       <div class="row" style="font-weight:800; font-size:12px; opacity:.85;">
         <div class="label">Pratica</div>
         <div class="who">A</div>
         <div class="who">B</div>
       </div>
 
-      <!-- 6 pratiche -->
       <div class="row practice">
         <div class="label">Baci e contatto affettivo</div>
         <div class="who"><input type="checkbox" data-side="A" data-id="1"></div>
@@ -155,7 +165,9 @@
   const checks = Array.from(document.querySelectorAll('input[type="checkbox"][data-id]'));
 
   function getLabelById(id) {
-    const row = document.querySelector('.practice input[data-id="' + id + '"]').closest(".practice");
+    const el = document.querySelector('.practice input[data-id="' + id + '"]');
+    if (!el) return "";
+    const row = el.closest(".practice");
     return row.querySelector(".label").textContent.trim();
   }
 
@@ -192,7 +204,6 @@
     const aName = (nameA.value || "Parte A").trim();
     const bName = (nameB.value || "Parte B").trim();
 
-    // Elenco pratiche consensuali (bilaterali)
     const okList = [];
     for (let i = 1; i <= total; i++) {
       const a = document.querySelector('input[data-side="A"][data-id="' + i + '"]').checked;
@@ -200,7 +211,6 @@
       if (a && b) okList.push("• " + getLabelById(i));
     }
 
-    // Stato
     outCard.style.display = "block";
     let status = "";
     let cls = "";
@@ -242,7 +252,6 @@
       copyBtn.textContent = "Copiato ✅";
       setTimeout(() => (copyBtn.textContent = "Copia riepilogo"), 1200);
     } catch (e) {
-      // fallback per Safari vecchi
       const ta = document.createElement("textarea");
       ta.value = summary.textContent;
       document.body.appendChild(ta);
@@ -264,9 +273,13 @@
     outCard.style.display = "none";
   });
 
-  // init
   enableBtn();
   countMutual();
+
+  // 🔹 PWA: registra il service worker se supportato
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+  }
 })();
 </script>
 </body>
